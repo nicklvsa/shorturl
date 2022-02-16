@@ -21,8 +21,8 @@ services:
     working_dir: /go/shorturlapi
     networks:
       - shorturlapi
-    env_file:
-      - env.conf
+    # env_file:
+    #   - env.conf
     volumes:
       - ./:/go/shorturlapi
     ports:
