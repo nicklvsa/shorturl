@@ -26,8 +26,16 @@ func MustParams(c *gin.Context, params ...string) {
 	}
 }
 
-func TotalCountDBKey(employeeID, shortID string) string {
-	return fmt.Sprintf("totalcount::%s::%s", employeeID, shortID)
+func TotalCountDBKey(shortID string) string {
+	return fmt.Sprintf("totalcount::%s", shortID)
+}
+
+func DayCountDBKey(shortID string) string {
+	return fmt.Sprintf("daycount::%s", shortID)
+}
+
+func WeekCountDBKey(shortID string) string {
+	return fmt.Sprintf("weekcount::%s", shortID)
 }
 
 func ShortenDBKey(shortID string) string {

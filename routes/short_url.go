@@ -8,6 +8,7 @@ import (
 	"github.com/nicklvsa/shorturl/actions"
 	"github.com/nicklvsa/shorturl/shared"
 	"github.com/nicklvsa/shorturl/shared/http"
+	"github.com/nicklvsa/shorturl/shared/logger"
 )
 
 type ShortURLHandler struct {
@@ -37,6 +38,10 @@ func (h ShortURLHandler) VisitShortURL(c *gin.Context) {
 			c,
 		)
 		return
+	}
+
+	if err := h.Actions.IncrShortURLCount(shortID); err != nil {
+		logger.Warnf("unable to increment url view count. Error: ", err.Error())
 	}
 
 	c.Redirect(301, longURL)

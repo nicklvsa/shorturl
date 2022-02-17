@@ -36,6 +36,47 @@ func generateShortURL(longURL, employeeID string) string {
 	return randomizeString(xid.New().String())
 }
 
+func (a Actions) setMetrics(shortID string) error {
+	totalCountKey := shared.TotalCountDBKey(shortID)
+	weekKey := shared.WeekCountDBKey(shortID)
+	dayKey := shared.DayCountDBKey(shortID)
+
+	count, err := a.Config.DB.Exists(a.Ctx, totalCountKey).Result()
+	if err != nil {
+		return err
+	}
+
+	if count <= 0 {
+		if err := a.Config.DB.Set(a.Ctx, totalCountKey, 0, 0).Err(); err != nil {
+			return err
+		}
+	}
+
+	count, err = a.Config.DB.Exists(a.Ctx, dayKey).Result()
+	if err != nil {
+		return err
+	}
+
+	if count <= 0 {
+		if err := a.Config.DB.Set(a.Ctx, dayKey, 0, 24*time.Hour).Err(); err != nil {
+			return err
+		}
+	}
+
+	count, err = a.Config.DB.Exists(a.Ctx, weekKey).Result()
+	if err != nil {
+		return err
+	}
+
+	if count <= 0 {
+		if err := a.Config.DB.Set(a.Ctx, weekKey, 0, 168*time.Hour).Err(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *int) (string, error) {
 	shortID := generateShortURL(longURL, employeeID)
 
@@ -59,9 +100,7 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 		return "", err
 	}
 
-	countKey := shared.TotalCountDBKey(employeeID, shortID)
-
-	if err := a.Config.DB.Set(a.Ctx, countKey, 0, 0).Err(); err != nil {
+	if err := a.setMetrics(shortID); err != nil {
 		return "", err
 	}
 
@@ -89,10 +128,20 @@ func (a Actions) DeleteShortURL(shortID, employeeID string) error {
 	return nil
 }
 
-func (a Actions) IncrShortURLCount(employeeID, shortID string) error {
-	key := shared.TotalCountDBKey(employeeID, shortID)
+func (a Actions) IncrShortURLCount(shortID string) error {
+	totalKey := shared.TotalCountDBKey(shortID)
+	weekKey := shared.WeekCountDBKey(shortID)
+	dayKey := shared.DayCountDBKey(shortID)
 
-	if err := a.Config.DB.Incr(a.Ctx, key).Err(); err != nil {
+	if err := a.Config.DB.Incr(a.Ctx, totalKey).Err(); err != nil {
+		return err
+	}
+
+	if err := a.Config.DB.Incr(a.Ctx, weekKey).Err(); err != nil {
+		return err
+	}
+
+	if err := a.Config.DB.Incr(a.Ctx, dayKey).Err(); err != nil {
 		return err
 	}
 
