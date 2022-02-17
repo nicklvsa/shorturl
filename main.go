@@ -23,14 +23,20 @@ func main() {
 	// healthcheck route for docker
 	router.GET("/healthcheck", routes.HealthcheckHandler)
 
+	// base route for redirecting to a short url's long url mapping
+	router.GET("/v/:id", shortHandler.VisitShortURL)
+
+	// create a router group to nest all shortener routes under the /short prefix
+	shortGroup := router.Group("/short")
+
 	// create a new short url based on a long url input
-	router.GET("/shorten_url", shortHandler.CreateShortURLHandler)
+	shortGroup.GET("/new/:employee_id/:url", shortHandler.CreateShortURLHandler)
 
 	// delete a short url by its id
-	router.GET("/delete_url", shortHandler.DeleteShortURLHandler)
+	shortGroup.GET("/delete/:employee_id/:id", shortHandler.DeleteShortURLHandler)
 
 	// retrieve metrics for a specific short url
-	router.GET("/metrics", shortHandler.GetShortURLMetricsHandler)
+	shortGroup.GET("/metrics/:id", shortHandler.GetShortURLMetricsHandler)
 
 	// start http server on port 8080
 	if err := router.Run(":8080"); err != nil {
