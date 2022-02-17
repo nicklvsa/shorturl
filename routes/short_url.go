@@ -36,25 +36,34 @@ func (h ShortURLHandler) VisitShortURL(c *gin.Context) {
 			shared.GetPointerToString(msg),
 			c,
 		)
+		return
 	}
 
-	http.HTTPResponse(
-		200,
-		true,
-		shared.GetPointerToString(longURL),
-		c,
-	)
+	c.Redirect(301, longURL)
+	return
 }
 
 func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
-	shared.MustParams(c, "employee_id", "url")
+	shared.MustParams(c, "employee_id")
 
 	var expireMins *int
-	longURL := c.Param("url")
 	employeeID := c.Param("employee_id")
 
+	longURL := c.Query("url")
 	expires_in := c.Query("expires")
-	if len(expires_in) >= 0 {
+
+	if len(longURL) <= 0 {
+		msg := "a url must be set to be shortened"
+		http.HTTPResponse(
+			400,
+			false,
+			shared.GetPointerToString(msg),
+			c,
+		)
+		return
+	}
+
+	if len(expires_in) > 0 {
 		// we should expire the url in x minutes
 		mins, err := strconv.Atoi(expires_in)
 		if err != nil {
@@ -65,6 +74,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 				shared.GetPointerToString(msg),
 				c,
 			)
+			return
 		}
 
 		expireMins = &mins
@@ -72,15 +82,14 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 
 	shortID, err := h.Actions.CreateURLMapping(longURL, employeeID, expireMins)
 	if err != nil {
-		if err != nil {
-			msg := "unable to save url mapping, try again later"
-			http.HTTPResponse(
-				400,
-				false,
-				shared.GetPointerToString(msg),
-				c,
-			)
-		}
+		msg := "unable to save url mapping, try again later"
+		http.HTTPResponse(
+			400,
+			false,
+			shared.GetPointerToString(msg),
+			c,
+		)
+		return
 	}
 
 	msg := fmt.Sprintf("http://localhost:8080/v/%s", shortID)
@@ -90,10 +99,11 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		shared.GetPointerToString(msg),
 		c,
 	)
+	return
 }
 
 func (h ShortURLHandler) GetShortURLMetricsHandler(c *gin.Context) {
-	// shared.MustParams(c, "id")
+	// shared.MustParams(c, "id", "employee_id")
 
 	// shortID := c.Param("id")
 }
@@ -101,6 +111,32 @@ func (h ShortURLHandler) GetShortURLMetricsHandler(c *gin.Context) {
 func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	shared.MustParams(c, "employee_id", "id")
 
-	// shortID := c.Param("id")
-	// employeeID := c.Param("employee_id")
+	shortID := c.Param("id")
+	employeeID := c.Param("employee_id")
+
+	if err := h.Actions.DeleteShortURL(shortID, employeeID); err != nil {
+		msg := "could not delete provided short url"
+		statusCode := 400
+
+		if err.Error() == "unauthorized" {
+			statusCode = 401
+		}
+
+		http.HTTPResponse(
+			statusCode,
+			false,
+			shared.GetPointerToString(msg),
+			c,
+		)
+		return
+	}
+
+	msg := fmt.Sprintf("%s has been deleted", shortID)
+	http.HTTPResponse(
+		200,
+		true,
+		shared.GetPointerToString(msg),
+		c,
+	)
+	return
 }

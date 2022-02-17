@@ -26,6 +26,10 @@ func MustParams(c *gin.Context, params ...string) {
 	}
 }
 
+func TotalCountDBKey(employeeID, shortID string) string {
+	return fmt.Sprintf("totalcount::%s::%s", employeeID, shortID)
+}
+
 func ShortenDBKey(shortID string) string {
 	return fmt.Sprintf("short::%s", shortID)
 }

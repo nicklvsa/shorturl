@@ -30,13 +30,13 @@ func main() {
 	shortGroup := router.Group("/short")
 
 	// create a new short url based on a long url input
-	shortGroup.GET("/new/:employee_id/:url", shortHandler.CreateShortURLHandler)
+	shortGroup.GET("/new/:employee_id", shortHandler.CreateShortURLHandler)
 
 	// delete a short url by its id
 	shortGroup.GET("/delete/:employee_id/:id", shortHandler.DeleteShortURLHandler)
 
 	// retrieve metrics for a specific short url
-	shortGroup.GET("/metrics/:id", shortHandler.GetShortURLMetricsHandler)
+	shortGroup.GET("/metrics/:employee_id/:id", shortHandler.GetShortURLMetricsHandler)
 
 	// start http server on port 8080
 	if err := router.Run(":8080"); err != nil {
