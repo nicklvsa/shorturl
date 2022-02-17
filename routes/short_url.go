@@ -108,9 +108,26 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 }
 
 func (h ShortURLHandler) GetShortURLMetricsHandler(c *gin.Context) {
-	// shared.MustParams(c, "id", "employee_id")
+	shared.MustParams(c, "id", "employee_id")
 
-	// shortID := c.Param("id")
+	shortID := c.Param("id")
+	employeeID := c.Param("employee_id")
+
+	metrics, err := h.Actions.GetShortURLMetrics(shortID, employeeID)
+	if err != nil {
+		logger.Errorf(err.Error())
+		msg := "unable to retrieve metrics"
+		http.HTTPResponse(
+			400,
+			false,
+			shared.GetPointerToString(msg),
+			c,
+		)
+		return
+	}
+
+	c.JSON(200, metrics)
+	return
 }
 
 func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
