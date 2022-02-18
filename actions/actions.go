@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -56,42 +57,40 @@ func (a Actions) canAccess(key, employeeID string) bool {
 	return storedVal == val
 }
 
+func (a Actions) keyExists(key string) bool {
+	count, err := a.Config.DB.Exists(a.Ctx, key).Result()
+	if err != nil {
+		return false
+	}
+
+	return count > 0
+}
+
 func (a Actions) setMetrics(shortID string) error {
-	totalCountKey := shared.TotalCountDBKey(shortID)
-	weekKey := shared.WeekCountDBKey(shortID)
-	dayKey := shared.DayCountDBKey(shortID)
-
-	count, err := a.Config.DB.Exists(a.Ctx, totalCountKey).Result()
+	periods, err := a.Config.MetricsConfig.GetMetricPeriods()
 	if err != nil {
 		return err
 	}
 
-	if count <= 0 {
-		if err := a.Config.DB.Set(a.Ctx, totalCountKey, 0, 0).Err(); err != nil {
-			return err
+	for name, period := range periods {
+		key := fmt.Sprintf("%s::%s", name, shortID)
+
+		if !a.keyExists(key) {
+			if err := a.setMetric(name, shortID, period); err != nil {
+				return err
+			}
 		}
 	}
 
-	count, err = a.Config.DB.Exists(a.Ctx, dayKey).Result()
-	if err != nil {
+	return nil
+}
+
+func (a Actions) setMetric(name, shortID string, period time.Duration) error {
+	key := fmt.Sprintf("%s::%s", name, shortID)
+	logger.Infof("Setting ttl for %s to %s", key, period.String())
+
+	if err := a.Config.DB.Set(a.Ctx, key, 0, period).Err(); err != nil {
 		return err
-	}
-
-	if count <= 0 {
-		if err := a.Config.DB.Set(a.Ctx, dayKey, 0, 24*time.Hour).Err(); err != nil {
-			return err
-		}
-	}
-
-	count, err = a.Config.DB.Exists(a.Ctx, weekKey).Result()
-	if err != nil {
-		return err
-	}
-
-	if count <= 0 {
-		if err := a.Config.DB.Set(a.Ctx, weekKey, 0, 168*time.Hour).Err(); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -100,11 +99,13 @@ func (a Actions) setMetrics(shortID string) error {
 func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *int) (string, error) {
 	shortID := generateShortURL(longURL, employeeID)
 
+	// ensure a shorturl cannot be duplicated
 	for {
 		if val, _ := a.GetLongURL(shortID); val == "" {
 			break
 		}
 
+		logger.Warnf("found colliding short id, regenerating...")
 		shortID = generateShortURL(longURL, employeeID)
 	}
 
@@ -117,10 +118,12 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 	val := shared.ShortenDBVal(employeeID, longURL)
 
 	if err := a.Config.DB.Set(a.Ctx, key, val, dur).Err(); err != nil {
+		logger.Errorf("unable to set url mapping! Error: %s", err.Error())
 		return "", err
 	}
 
 	if err := a.setMetrics(shortID); err != nil {
+		logger.Errorf("unable to set metrics! Error: %s", err.Error())
 		return "", err
 	}
 
@@ -142,72 +145,65 @@ func (a Actions) DeleteShortURL(shortID, employeeID string) error {
 }
 
 func (a Actions) IncrShortURLCount(shortID string) error {
-	logger.Infof("trying to incr")
-
-	totalKey := shared.TotalCountDBKey(shortID)
-	weekKey := shared.WeekCountDBKey(shortID)
-	dayKey := shared.DayCountDBKey(shortID)
-
-	if err := a.Config.DB.IncrBy(a.Ctx, totalKey, 1).Err(); err != nil {
+	periods, err := a.Config.MetricsConfig.GetMetricPeriods()
+	if err != nil {
 		return err
 	}
 
-	if err := a.Config.DB.IncrBy(a.Ctx, weekKey, 1).Err(); err != nil {
-		return err
-	}
+	for name := range periods {
+		key := fmt.Sprintf("%s::%s", name, shortID)
 
-	if err := a.Config.DB.IncrBy(a.Ctx, dayKey, 1).Err(); err != nil {
-		return err
+		if err := a.Config.DB.IncrBy(a.Ctx, key, 1).Err(); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (a Actions) GetShortURLMetrics(shortID, employeeID string) (*MetricsView, error) {
-	key := shared.ShortenDBKey(shortID)
-	totalKey := shared.TotalCountDBKey(shortID)
-	weekKey := shared.WeekCountDBKey(shortID)
-	dayKey := shared.DayCountDBKey(shortID)
+func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int, error) {
+	shortKey := shared.ShortenDBKey(shortID)
 
-	if !a.canAccess(key, employeeID) {
+	periods, err := a.Config.MetricsConfig.GetMetricPeriods()
+	if err != nil {
+		return nil, err
+	}
+
+	if !a.canAccess(shortKey, employeeID) {
 		return nil, errors.New("unauthorized")
 	}
 
-	totalRes, err := a.Config.DB.Get(a.Ctx, totalKey).Result()
-	if err != nil {
-		return nil, err
+	data := make(map[string]int)
+
+	for name, period := range periods {
+		key := fmt.Sprintf("%s::%s", name, shortID)
+
+		if a.keyExists(key) {
+			logger.Infof("key %s exists", name)
+
+			keyTotal, err := a.Config.DB.Get(a.Ctx, key).Result()
+			if err != nil {
+				return nil, err
+			}
+
+			// TODO: remove
+			// dur, _ := a.Config.DB.TTL(a.Ctx, key).Result()
+			// logger.Infof("KEY: %s | TTL: %s", name, dur.String())
+
+			keyNum, err := strconv.Atoi(keyTotal)
+			if err != nil {
+				return nil, err
+			}
+
+			data[name] = keyNum
+		} else {
+			logger.Infof("key %s does not exist", name)
+			a.setMetric(name, shortID, period)
+			data[name] = 0
+		}
 	}
 
-	totalNum, err := strconv.Atoi(totalRes)
-	if err != nil {
-		return nil, err
-	}
-
-	dayRes, err := a.Config.DB.Get(a.Ctx, dayKey).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	dayNum, err := strconv.Atoi(dayRes)
-	if err != nil {
-		return nil, err
-	}
-
-	weekRes, err := a.Config.DB.Get(a.Ctx, weekKey).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	weekNum, err := strconv.Atoi(weekRes)
-	if err != nil {
-		return nil, err
-	}
-
-	return &MetricsView{
-		TotalCount:    totalNum,
-		PastDayCount:  dayNum,
-		PastWeekCount: weekNum,
-	}, nil
+	return data, nil
 }
 
 func (a Actions) GetLongURL(shortID string) (string, error) {

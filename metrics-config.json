@@ -1,0 +1,8 @@
+{
+    "collect_all_time": true,
+    "periods": {
+        "1m": "past_minute",
+        "24h": "past_day", 
+        "7d": "past_week"
+    }
+}
