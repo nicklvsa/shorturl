@@ -35,7 +35,7 @@ func (h ShortURLHandler) VisitShortURL(c *gin.Context) {
 		http.HTTPResponse(
 			404,
 			false,
-			shared.GetPointerToString(msg),
+			&msg,
 			c,
 		)
 		return
@@ -63,7 +63,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
-			shared.GetPointerToString(msg),
+			&msg,
 			c,
 		)
 		return
@@ -77,7 +77,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 			http.HTTPResponse(
 				400,
 				false,
-				shared.GetPointerToString(msg),
+				&msg,
 				c,
 			)
 			return
@@ -92,7 +92,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
-			shared.GetPointerToString(msg),
+			&msg,
 			c,
 		)
 		return
@@ -102,7 +102,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 	http.HTTPResponse(
 		201,
 		true,
-		shared.GetPointerToString(msg),
+		&msg,
 		c,
 	)
 	return
@@ -121,7 +121,7 @@ func (h ShortURLHandler) GetShortURLMetricsHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
-			shared.GetPointerToString(msg),
+			&msg,
 			c,
 		)
 		return
@@ -148,7 +148,7 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			statusCode,
 			false,
-			shared.GetPointerToString(msg),
+			&msg,
 			c,
 		)
 		return
@@ -158,7 +158,7 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	http.HTTPResponse(
 		200,
 		true,
-		shared.GetPointerToString(msg),
+		&msg,
 		c,
 	)
 	return
