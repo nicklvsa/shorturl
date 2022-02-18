@@ -10,15 +10,10 @@ import (
 	"time"
 
 	"github.com/nicklvsa/shorturl/shared"
+	"github.com/nicklvsa/shorturl/shared/errs"
 	"github.com/nicklvsa/shorturl/shared/logger"
 	"github.com/rs/xid"
 )
-
-type MetricsView struct {
-	TotalCount    int `json:"total_count"`
-	PastDayCount  int `json:"past_day_count"`
-	PastWeekCount int `json:"past_week_count"`
-}
 
 type Actions struct {
 	Config *shared.Config
@@ -170,7 +165,7 @@ func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int,
 	}
 
 	if !a.canAccess(shortKey, employeeID) {
-		return nil, errors.New("unauthorized")
+		return nil, errs.UnauthorizedAPIError.Err()
 	}
 
 	data := make(map[string]int)
@@ -185,10 +180,6 @@ func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int,
 			if err != nil {
 				return nil, err
 			}
-
-			// TODO: remove
-			// dur, _ := a.Config.DB.TTL(a.Ctx, key).Result()
-			// logger.Infof("KEY: %s | TTL: %s", name, dur.String())
 
 			keyNum, err := strconv.Atoi(keyTotal)
 			if err != nil {

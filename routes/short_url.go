@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nicklvsa/shorturl/actions"
 	"github.com/nicklvsa/shorturl/shared"
+	"github.com/nicklvsa/shorturl/shared/errs"
 	"github.com/nicklvsa/shorturl/shared/http"
 	"github.com/nicklvsa/shorturl/shared/logger"
 )
@@ -58,7 +59,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 	expires_in := c.Query("expires")
 
 	if len(longURL) <= 0 {
-		msg := "a url must be set to be shortened"
+		msg := errs.URLMustBeProvidedAPIError.Str()
 		http.HTTPResponse(
 			400,
 			false,
@@ -72,7 +73,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		// we should expire the url in x minutes
 		mins, err := strconv.Atoi(expires_in)
 		if err != nil {
-			msg := "expires_in must be a number in minutes"
+			msg := errs.FormatMismatchExpiresInAPIError.Str()
 			http.HTTPResponse(
 				400,
 				false,
@@ -87,7 +88,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 
 	shortID, err := h.Actions.CreateURLMapping(longURL, employeeID, expireMins)
 	if err != nil {
-		msg := "unable to save url mapping, try again later"
+		msg := errs.SaveURLMappingFailedAPIError.Str()
 		http.HTTPResponse(
 			400,
 			false,
@@ -137,10 +138,10 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	employeeID := c.Param("employee_id")
 
 	if err := h.Actions.DeleteShortURL(shortID, employeeID); err != nil {
-		msg := "could not delete provided short url"
+		msg := errs.DeleteURLFailedAPIError.Str()
 		statusCode := 400
 
-		if err.Error() == "unauthorized" {
+		if err == errs.UnauthorizedAPIError.Err() {
 			statusCode = 401
 		}
 
