@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/nicklvsa/shorturl/routes"
@@ -9,8 +10,13 @@ import (
 )
 
 func TestHealthCheckHandler(t *testing.T) {
-	ctx, _ := fixtures.GetMockContext()
+	ctx, data := fixtures.GetMockContext()
 	routes.HealthcheckHandler(ctx)
 
+	out := make(map[string]interface{})
+	json.NewDecoder(data.Body).Decode(&out)
+
+	utils.AssertTrue(out["success"].(bool), t)
 	utils.AssertInt(ctx.Writer.Status(), 200, t)
+	utils.AssertStr(out["message"].(string), "healthcheck", t)
 }
