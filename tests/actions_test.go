@@ -23,12 +23,10 @@ func TestCreateURLMapping(t *testing.T) {
 
 	mock.Regexp().ExpectSet("(short::*)\\w+", "123::http://hello.world", 0).SetVal("1")
 
-	data, err := act.CreateURLMapping("http://hello.world", "123", nil)
+	_, err := act.CreateURLMapping("http://hello.world", "123", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	t.Log(data)
 }
 
 func TestDeleteShortURL(t *testing.T) {
