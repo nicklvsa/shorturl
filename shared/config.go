@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/nicklvsa/shorturl/shared/db"
-	"github.com/nicklvsa/shorturl/shared/logger"
 )
 
 type MetricsConfig struct {
@@ -52,8 +51,6 @@ func (m MetricsConfig) GetMetricPeriods() (map[string]time.Duration, error) {
 	if m.CollectAllTime {
 		data["total_count"] = time.Duration(0)
 	}
-
-	logger.Infof("%+v", data)
 
 	return data, nil
 }

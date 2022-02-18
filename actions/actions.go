@@ -82,7 +82,6 @@ func (a Actions) setMetrics(shortID string) error {
 
 func (a Actions) setMetric(name, shortID string, period time.Duration) error {
 	key := fmt.Sprintf("%s::%s", name, shortID)
-	logger.Infof("Setting ttl for %s to %s", key, period.String())
 
 	if err := a.Config.DB.Set(a.Ctx, key, 0, period).Err(); err != nil {
 		return err
@@ -174,7 +173,6 @@ func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int,
 		key := fmt.Sprintf("%s::%s", name, shortID)
 
 		if a.keyExists(key) {
-			logger.Infof("key %s exists", name)
 
 			keyTotal, err := a.Config.DB.Get(a.Ctx, key).Result()
 			if err != nil {
@@ -188,7 +186,6 @@ func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int,
 
 			data[name] = keyNum
 		} else {
-			logger.Infof("key %s does not exist", name)
 			a.setMetric(name, shortID, period)
 			data[name] = 0
 		}
