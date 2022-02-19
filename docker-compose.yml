@@ -9,7 +9,7 @@ services:
       - shorturlapi
     volumes:
       - redis-data:/data
-    command: ["redis-server"]
+    command: ["redis-server", "--appendonly", "yes"]
       
   shorturl-api:
     build:
