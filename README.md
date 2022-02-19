@@ -11,6 +11,7 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 - __Langauge__: Golang
 - __Database__: Redis
 - __Containerization__: Docker / docker-compose
+- __Build__: Github actions
 
 #### Libraries used:
 
