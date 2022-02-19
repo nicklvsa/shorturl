@@ -110,6 +110,11 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 		dur = time.Duration(*expirationMins) * time.Minute
 	}
 
+	// ensure a schema is provided (if none, always default to https)
+	if !strings.HasPrefix(longURL, "http") {
+		longURL = fmt.Sprintf("https://%s", longURL)
+	}
+
 	// format the redis key & value
 	key := shared.ShortenDBKey(shortID)
 	val := shared.ShortenDBVal(employeeID, longURL)
