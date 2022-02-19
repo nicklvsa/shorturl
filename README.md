@@ -41,15 +41,15 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 
 #### Endpoint examples:
 - Create a short url that never expires:
-    http://localhost:8080/short/new/abc123?url=http://example.com
+    `http://localhost:8080/short/new/abc123?url=http://example.com`
 - Create a short url that expires after 30 minutes:
-    http://localhost:8080/short/new/abc123?url=http://example.com&expires=30
+    `http://localhost:8080/short/new/abc123?url=http://example.com&expires=30`
 - Delete a short url:
-    http://localhost:8080/short/delete/abc123/short_url_id
+    `http://localhost:8080/short/delete/abc123/short_url_id`
 - Fetch metrics for a short url:
-    http://localhost:8080/short/metrics/abc123/short_url_id
+    `http://localhost:8080/short/metrics/abc123/short_url_id`
 - View short url's long url:
-    http://localhost:8080/v/short_url_id
+    `http://localhost:8080/v/short_url_id`
 
 #### Endpoint explanation
 
