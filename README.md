@@ -26,6 +26,7 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 - Short URL ownership is controlled by the `employee_id`. This stands as an example how a real production environment could implement access control on certain routes that manage a short url. (Like metrics collection or deletion)
 - Optional short url expiration, by using an `expires` query parameter when creating a new short url.
 - All short urls are public, regardless of the creator. (via the `/v/:short_id` route)
+- Stored short urls must persist to disk
 
 
 ### Endpoints
