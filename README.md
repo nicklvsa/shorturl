@@ -33,7 +33,7 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 - **GET** /v/:short_id
 - **GET** /short/new/:employee_id
   - Query params:
-    - url=http://... (required)
+    - url=http://... (required, note: if no protocol is provided, `https` is used)
     - expires=5 (optional, in minutes)
 - **GET** /short/delete/:employee_id/:short_id
 - **GET** /short/metrics/:employee_id/:short_id

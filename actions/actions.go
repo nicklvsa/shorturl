@@ -110,7 +110,7 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 		dur = time.Duration(*expirationMins) * time.Minute
 	}
 
-	// ensure a schema is provided (if none, always default to https)
+	// ensure a protocol is provided (if none, always default to https)
 	if !strings.HasPrefix(longURL, "http") {
 		longURL = fmt.Sprintf("https://%s", longURL)
 	}
