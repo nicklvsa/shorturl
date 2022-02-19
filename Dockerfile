@@ -1,8 +1,5 @@
 FROM golang:1.17 as dev
 
-ARG REPO_USER
-ARG REPO_KEY
-
 WORKDIR /go/shorturlapi
 
 COPY . .
@@ -19,9 +16,6 @@ CMD ["go", "run", "/go/shorturlapi/main.go"]
 
 
 FROM golang:1.17 as build
-
-ARG REPO_USER
-ARG REPO_KEY
 
 WORKDIR /go/shorturlapi
 
