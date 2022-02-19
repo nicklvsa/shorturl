@@ -106,7 +106,7 @@ To run the built in unit tests, the following script can be run from the root di
 ./run-tests.sh
 </pre>
 
-If you are unable to run a bash script above, you may use the following to run the tests:
+If you are unable to run the above script, you may use the following to run the tests:
 <pre>
 cd tests
 go test -v
