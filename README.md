@@ -1,14 +1,65 @@
 # ShortURL API
 
 ## Design
-TODO
+
+### Summary
+
+The `ShortURL API` provides clear endpoints to shorten, view, and delete short urls. It also provides a convenient endpoint to retrieve metrics on a specific short url (including total views, past 24 hours, and past week). For installation instructions, see the `FAQs` section.
+
+#### Assumptions
+
+- Short URLs must __always__ be unique, and may never collide.
+- API users must be able to retrieve short url metrics (these metrics can be easily modified, by changing the [Metrics Configuration](./metrics-config.json))
+- 
+
+
+### Endpoints
+- /healthcheck
+- /v/:short_id
+- /short
+  - /new/:employee_id
+  - /delete/:employee_id/:short_id
+  - /metrics/:employee_id/:short_id
+
 
 ## FAQs
 
 <details>
+<summary>What are the required prerequisites?</summary>
+<br/>
+The following items are required to use this API locally:
+<ul>
+<li>
+<i>
+<a href="https://docker.com">docker</a>
+</i>
+</li>
+<li>
+<i>
+<a href="https://docs.docker.com/compose/install/">docker-compose</a>
+</i>
+</li>
+</ul>
+
+If you are attempting to run this API outside of a containerized environment, the following items are required:
+<ul>
+<li>
+<i>
+<a href="https://golang.org">golang</a>
+</i>
+</li>
+<li>
+<i>
+<a href="https://redis.io/">redis-server</a>
+</i>
+</li>
+</ul>
+</details>
+
+<details>
 <summary>How do I run it locally?</summary>
 <br/>
-For local use, the following command can be run to spin up the api using <strong>docker-compose</strong>:
+For local use, the following command can be run to spin up the API using <strong>docker-compose</strong>:
 <pre>
 docker-compose up
 </pre>
@@ -20,5 +71,26 @@ docker-compose up
 To run the built in unit tests, the following script can be run from the root directory:
 <pre>
 ./run-tests.sh
+</pre>
+
+If you are unable to run a bash script above, you may use the following to run the tests:
+<pre>
+cd tests
+go test -v
+</pre>
+</details>
+
+<details>
+<summary>How do I collect more metrics?</summary>
+<br/>
+1. Open the <a href="./metrics-config.json">Metrics Configuration</a> json file.<br/>
+2. Modify the <strong><i>periods</i></strong> object to collect customized metrics.
+
+<h4>Example:</h4>
+Example addition which collects 1 hour of short url link counts
+<pre>
+{
+    "1h": "past_hour"
+}
 </pre>
 </details>

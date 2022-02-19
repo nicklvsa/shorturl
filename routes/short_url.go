@@ -138,8 +138,8 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	employeeID := c.Param("employee_id")
 
 	if err := h.Actions.DeleteShortURL(shortID, employeeID); err != nil {
-		msg := errs.DeleteURLFailedAPIError.Str()
 		statusCode := 400
+		msg := errs.DeleteURLFailedAPIError.Str()
 
 		if err == errs.UnauthorizedAPIError.Err() {
 			statusCode = 401
