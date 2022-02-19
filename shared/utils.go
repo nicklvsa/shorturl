@@ -16,6 +16,7 @@ func MustParams(c *gin.Context, params ...string) {
 			http.HTTPResponse(
 				400,
 				false,
+				nil,
 				&msg,
 				c,
 			)

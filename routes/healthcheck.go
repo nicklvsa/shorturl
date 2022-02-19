@@ -7,5 +7,5 @@ import (
 
 func HealthcheckHandler(c *gin.Context) {
 	msg := "healthcheck"
-	http.HTTPResponse(200, true, &msg, c)
+	http.HTTPResponse(200, true, &msg, &msg, c)
 }

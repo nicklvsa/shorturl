@@ -13,7 +13,7 @@ func TestHTTPResponse(t *testing.T) {
 	ctx, data := fixtures.GetMockContext()
 
 	message := "error"
-	http.HTTPResponse(401, false, &message, ctx)
+	http.HTTPResponse(401, false, nil, &message, ctx)
 
 	out := make(map[string]interface{})
 	json.NewDecoder(data.Body).Decode(&out)

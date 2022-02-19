@@ -35,6 +35,7 @@ func (h ShortURLHandler) VisitShortURL(c *gin.Context) {
 		http.HTTPResponse(
 			404,
 			false,
+			nil,
 			&msg,
 			c,
 		)
@@ -63,6 +64,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
+			nil,
 			&msg,
 			c,
 		)
@@ -77,6 +79,7 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 			http.HTTPResponse(
 				400,
 				false,
+				nil,
 				&msg,
 				c,
 			)
@@ -92,17 +95,19 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
+			nil,
 			&msg,
 			c,
 		)
 		return
 	}
 
-	msg := fmt.Sprintf("http://localhost:8080/v/%s", shortID)
+	data := fmt.Sprintf("http://localhost:8080/v/%s", shortID)
 	http.HTTPResponse(
 		201,
 		true,
-		&msg,
+		&data,
+		nil,
 		c,
 	)
 	return
@@ -121,13 +126,20 @@ func (h ShortURLHandler) GetShortURLMetricsHandler(c *gin.Context) {
 		http.HTTPResponse(
 			400,
 			false,
+			nil,
 			&msg,
 			c,
 		)
 		return
 	}
 
-	c.JSON(200, metrics)
+	http.HTTPResponse(
+		200,
+		true,
+		metrics,
+		nil,
+		c,
+	)
 	return
 }
 
@@ -148,6 +160,7 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 		http.HTTPResponse(
 			statusCode,
 			false,
+			nil,
 			&msg,
 			c,
 		)
@@ -158,6 +171,7 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	http.HTTPResponse(
 		200,
 		true,
+		nil,
 		&msg,
 		c,
 	)
