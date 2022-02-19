@@ -14,6 +14,7 @@ func InitRedis(ctx context.Context) (*redis.Client, error) {
 		DB:       0,
 	})
 
+	// ping our redis client to ensure we have a connection to it
 	ping, err := client.Ping(ctx).Result()
 	if err != nil {
 		return nil, err

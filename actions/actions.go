@@ -37,6 +37,7 @@ func randomizeString(str string) string {
 }
 
 func generateShortURL(longURL, employeeID string) string {
+	// use xid to create a random string, then randomize those chars
 	return randomizeString(xid.New().String())
 }
 
@@ -103,22 +104,25 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 		shortID = generateShortURL(longURL, employeeID)
 	}
 
+	// define a default expiration (of none), or set the provided expiration
 	dur := 0 * time.Minute
 	if expirationMins != nil {
 		dur = time.Duration(*expirationMins) * time.Minute
 	}
 
+	// format the redis key & value
 	key := shared.ShortenDBKey(shortID)
 	val := shared.ShortenDBVal(employeeID, longURL)
 
+	// create the short url in the db with the optional expiration
 	if err := a.Config.DB.Set(a.Ctx, key, val, dur).Err(); err != nil {
 		logger.Errorf("unable to set url mapping! Error: %s", err.Error())
 		return "", err
 	}
 
+	// setup default metric values for the new short url
 	if err := a.setMetrics(shortID); err != nil {
-		logger.Errorf("unable to set metrics! Error: %s", err.Error())
-		return "", err
+		logger.Errorf("unable to set metrics for %s! Error: %s", shortID, err.Error())
 	}
 
 	return shortID, nil
@@ -127,10 +131,12 @@ func (a Actions) CreateURLMapping(longURL, employeeID string, expirationMins *in
 func (a Actions) DeleteShortURL(shortID, employeeID string) error {
 	key := shared.ShortenDBKey(shortID)
 
+	// check if the provided employee id is correct
 	if !a.canAccess(key, employeeID) {
 		return errors.New("unauthorized")
 	}
 
+	// delete the short url
 	if err := a.Config.DB.Del(a.Ctx, key).Err(); err != nil {
 		return err
 	}
@@ -144,6 +150,8 @@ func (a Actions) IncrShortURLCount(shortID string) error {
 		return err
 	}
 
+	// ensure all periods loaded from "metrics-config.json" are taken into
+	// account when incrementing each metric
 	for name := range periods {
 		key := fmt.Sprintf("%s::%s", name, shortID)
 
@@ -158,17 +166,21 @@ func (a Actions) IncrShortURLCount(shortID string) error {
 func (a Actions) GetShortURLMetrics(shortID, employeeID string) (map[string]int, error) {
 	shortKey := shared.ShortenDBKey(shortID)
 
+	// get all duration periods to return
 	periods, err := a.Config.MetricsConfig.GetMetricPeriods()
 	if err != nil {
 		return nil, err
 	}
 
+	// ensure the requester has proper access
 	if !a.canAccess(shortKey, employeeID) {
 		return nil, errs.UnauthorizedAPIError.Err()
 	}
 
 	data := make(map[string]int)
 
+	// build a map of all the metrics to return based on the
+	// loaded periods
 	for name, period := range periods {
 		key := fmt.Sprintf("%s::%s", name, shortID)
 
@@ -202,5 +214,6 @@ func (a Actions) GetLongURL(shortID string) (string, error) {
 		return "", err
 	}
 
+	// only return the long url, and not the stored employee id
 	return strings.Split(result, "::")[1], nil
 }

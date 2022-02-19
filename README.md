@@ -10,17 +10,36 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 
 - Short URLs must __always__ be unique, and may never collide.
 - API users must be able to retrieve short url metrics (these metrics can be easily modified, by changing the [Metrics Configuration](./metrics-config.json))
-- 
+- Short URL ownership is controlled by the `employee_id`. This stands as an example how a real production environment could implement access control on certain routes that manage a short url. (Like metrics collection or deletion)
+- Optional short url expiration, by using an `expires` query parameter when creating a new short url.
 
 
 ### Endpoints
-- /healthcheck
-- /v/:short_id
-- /short
-  - /new/:employee_id
-  - /delete/:employee_id/:short_id
-  - /metrics/:employee_id/:short_id
+- **GET** /healthcheck
+- **GET** /v/:short_id
+- **GET** /short/new/:employee_id
+  - Query params:
+    - url=http://... (required)
+    - expires=5 (optional, in minutes)
+- **GET** /short/delete/:employee_id/:short_id
+- **GET** /short/metrics/:employee_id/:short_id
 
+
+#### Endpoint examples:
+- Create a short url that never expires:
+  http://localhost:8080/short/new/abc123?url=http://example.com
+- Create a short url that expires after 30 minutes:
+  http://localhost:8080/short/new/abc123?url=http://example.com&expires=30
+- Delete a short url:
+  http://localhost:8080/short/delete/abc123/short_url_id
+- Fetch metrics for a short url:
+  http://localhost:8080/short/metrics/abc123/short_url_id
+- View short url's long url:
+  http://localhost:8080/v/short_url_id
+
+#### Endpoint explanation
+
+These endpoints are all defined as `GET` endpoints. This makes it easy to use in the browser, but also useful for a developer to integrate. In some of the above routes, `employee_id` is listed as part of path. This path variable is a unique string that represents a specific user, allowing short urls to be owned by an `employee_id`. When creating a new short url with the `/short/new/:employee_id` route, the `employee_id` may be any string. This will then be needed to reference metrics about the short url, and to delete the short url.
 
 ## FAQs
 

@@ -24,6 +24,8 @@ type Config struct {
 func (m MetricsConfig) GetMetricPeriods() (map[string]time.Duration, error) {
 	data := make(map[string]time.Duration)
 
+	// for every loaded period, parse each period entry
+	// into a valid duration
 	for period, name := range m.Periods {
 		if _, found := data[name]; !found {
 			periodLen := len(period) - 1

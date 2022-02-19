@@ -31,6 +31,8 @@ func (h ShortURLHandler) VisitShortURL(c *gin.Context) {
 
 	longURL, err := h.Actions.GetLongURL(shortID)
 	if err != nil {
+		logger.Errorf(err.Error())
+
 		msg := fmt.Sprintf("%s not found", shortID)
 		http.HTTPResponse(
 			404,
@@ -75,6 +77,8 @@ func (h ShortURLHandler) CreateShortURLHandler(c *gin.Context) {
 		// we should expire the url in x minutes
 		mins, err := strconv.Atoi(expires_in)
 		if err != nil {
+			logger.Errorf(err.Error())
+
 			msg := errs.FormatMismatchExpiresInAPIError.Str()
 			http.HTTPResponse(
 				400,
@@ -150,6 +154,8 @@ func (h ShortURLHandler) DeleteShortURLHandler(c *gin.Context) {
 	employeeID := c.Param("employee_id")
 
 	if err := h.Actions.DeleteShortURL(shortID, employeeID); err != nil {
+		logger.Errorf(err.Error())
+
 		statusCode := 400
 		msg := errs.DeleteURLFailedAPIError.Str()
 
