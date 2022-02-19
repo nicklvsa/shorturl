@@ -6,12 +6,26 @@
 
 The `ShortURL API` provides clear endpoints to shorten, view, and delete short urls. It also provides a convenient endpoint to retrieve metrics on a specific short url (including total views, past 24 hours, and past week). For installation instructions, see the `FAQs` section.
 
+#### Tech used:
+
+- __Langauge__: Golang
+- __Database__: Redis
+- __Containerization__: Docker / docker-compose
+
+#### Libraries used:
+
+- [Gin-Gonic](https://github.com/gin-gonic/gin) (Web framework)
+- [Go-Redis](https://github.com/go-redis/redis) (Redis client for go)
+- [redismock](https://github.com/go-redis/redismock) (Go-Redis client meant for mocking in unit tests)
+- [xid](https://github.com/rs/xid) (Used to generate short url identifiers)
+
 #### Assumptions
 
 - Short URLs must __always__ be unique, and may never collide.
 - API users must be able to retrieve short url metrics (these metrics can be easily modified, by changing the [Metrics Configuration](./metrics-config.json))
 - Short URL ownership is controlled by the `employee_id`. This stands as an example how a real production environment could implement access control on certain routes that manage a short url. (Like metrics collection or deletion)
 - Optional short url expiration, by using an `expires` query parameter when creating a new short url.
+- All short urls are public, regardless of the creator. (via the `/v/:short_id` route)
 
 
 ### Endpoints
@@ -27,15 +41,15 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 
 #### Endpoint examples:
 - Create a short url that never expires:
-  http://localhost:8080/short/new/abc123?url=http://example.com
+    http://localhost:8080/short/new/abc123?url=http://example.com
 - Create a short url that expires after 30 minutes:
-  http://localhost:8080/short/new/abc123?url=http://example.com&expires=30
+    http://localhost:8080/short/new/abc123?url=http://example.com&expires=30
 - Delete a short url:
-  http://localhost:8080/short/delete/abc123/short_url_id
+    http://localhost:8080/short/delete/abc123/short_url_id
 - Fetch metrics for a short url:
-  http://localhost:8080/short/metrics/abc123/short_url_id
+    http://localhost:8080/short/metrics/abc123/short_url_id
 - View short url's long url:
-  http://localhost:8080/v/short_url_id
+    http://localhost:8080/v/short_url_id
 
 #### Endpoint explanation
 
