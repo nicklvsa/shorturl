@@ -53,9 +53,11 @@ The `ShortURL API` provides clear endpoints to shorten, view, and delete short u
 - View short url's long url:
     `http://localhost:8080/v/short_url_id`
 
-#### Endpoint explanation
+#### Endpoint notes
 
-These endpoints are all defined as `GET` endpoints. This makes it easy to use in the browser, but also useful for a developer to integrate. In some of the above routes, `employee_id` is listed as part of path. This path variable is a unique string that represents a specific user, allowing short urls to be owned by an `employee_id`. When creating a new short url with the `/short/new/:employee_id` route, the `employee_id` may be any string. This will then be needed to reference metrics about the short url, and to delete the short url.
+These endpoints are all defined as `GET` endpoints. This makes it easy to use in the browser, but also useful for a developer to integrate. 
+
+In some of the above routes, `employee_id` is listed as part of path. This path variable is a unique string that represents a specific user, allowing short urls to be owned by an `employee_id`. When creating a new short url with the `/short/new/:employee_id` route, the `employee_id` may be any string. This will then be needed to reference metrics about the short url, and to delete the short url.
 
 ## FAQs
 
